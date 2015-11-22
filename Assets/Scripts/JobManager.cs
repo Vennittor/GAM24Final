@@ -2,12 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 
-//Singleton to pause and start coroutines immediatly
 public class JobManager : MonoBehaviour 
 {
 	static JobManager vInstance = null;
-
-	//There can only be one!
+	
 	public static JobManager instance
 	{
 		get
@@ -60,8 +58,7 @@ public class Job
 			start ();
 		}
 	}
-
-	//Job makers
+	
 	public static Job make(IEnumerator coroutine)
 	{
 		return new Job(coroutine);
@@ -71,8 +68,7 @@ public class Job
 	{
 		return new Job (coroutine, shouldStart);
 	}
-
-	//we want to stop, pause, unpause, kill coroutines
+	
 	public Job createAndAddChildJob (IEnumerator coroutine)
 	{
 		Job j = new Job (coroutine, false); 
@@ -137,7 +133,6 @@ public class Job
 	{
 		int delay = (int)(delayInSeconds * 1000);
 
-		//new thread for a kill timer
 		new System.Threading.Timer (Object =>
 		{
 			lock (this) 
