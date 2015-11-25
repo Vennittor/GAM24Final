@@ -4,17 +4,22 @@ using System.Collections;
 public class Shell : ItemBaseScript 
 {
 	public float timer =5.0f;
+
 	Vector3 leftright = Vector3.zero;
+
+	int hitCount = 0;
+
 	public override void Start ()
 	{
 		base.Start();
 	}
-	void Update () 
+    public override void Update () 
 	{
 		if(timer>=0)
 		timer -= Time.deltaTime;
 		if (timer <= 0)
 			FunctionBeta ();
+        base.Update();
 	}
 	public override void FunctionAlpha ()
 	{
@@ -36,16 +41,24 @@ public class Shell : ItemBaseScript
 	}
 	void OnCollisionEnter(Collision other)
 	{
+
 		if (other.gameObject.name != "Floor") 
 		{
-			if (other.transform.position.x < gameObject.transform.position.x) {
-				leftright = new Vector3 (1, 0, 0);
-				//rb.velocity = leftright * 4;
-				rb.velocity = leftright * 10;
-			} else {
-				leftright = new Vector3 (-1, 0, 0);
-				//rb.velocity = leftright * 4;
-				rb.velocity = leftright * 10;
+			hitCount ++;
+			if(hitCount>1)
+			{
+				if (other.transform.position.x < gameObject.transform.position.x) 
+				{
+					leftright = new Vector3 (1, 0, 0);
+					//rb.velocity = leftright * 4;
+					rb.velocity = leftright * 10;
+				} 
+				else 
+				{
+					leftright = new Vector3 (-1, 0, 0);
+					//rb.velocity = leftright * 4;
+					rb.velocity = leftright * 10;
+				}
 			}
 		}
 	}

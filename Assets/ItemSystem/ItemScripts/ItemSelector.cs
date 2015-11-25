@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
 [System.Serializable]
@@ -9,7 +8,7 @@ public class ItemSelector : MonoBehaviour
 						ICE, METAL,MUSHROOM,LASERGUN,STAR,SMASHBALL,BUNNYEARS,
 						HAMMER,PILL,SHELL,TOMATO,FIREFLOWER,TRIPMINE,BANANAPEEL,
 						BUMPER};
-	public itemName ItemToSpawn;
+
 	public List<itemName> common;
 	public List<itemName> unCommon;
 	public List<itemName> rare;
@@ -17,135 +16,115 @@ public class ItemSelector : MonoBehaviour
 
 	public List<GameObject>itemPrefabs;
 
-	public void RandomDrop()
+	public itemName RandomDrop()
 	{
-		if (GetComponent<ItemSpawner>().itemsAwake.Count <= 10) 
-		{
+		
 			float spawnRoll = Random.Range (0f, 100f);
 			if (spawnRoll < 40f) 
 			{
-				int commonChoice = Random.Range (0, common.Count);
-				Spawn (common [commonChoice]);
+				int choice = Random.Range (0, common.Count);
+				return common[choice];
 			} 
 			else if (spawnRoll >= 40 && spawnRoll < 70) 
 			{
-				int commonChoice = Random.Range (0, unCommon.Count);
-				Spawn (unCommon [commonChoice]);
+				int choice = Random.Range (0, unCommon.Count);
+				return unCommon[choice];
 			} 
 			else if (spawnRoll >= 70 && spawnRoll < 90) 
 			{
-				int commonChoice = Random.Range (0, rare.Count);
-				Spawn (rare [commonChoice]);
+				int choice = Random.Range (0, rare.Count);
+				return rare[choice];
 			} 
-			else if (spawnRoll >= 90) 
+			else
 			{
-				int commonChoice = Random.Range (0, veryRare.Count);
-				Spawn (veryRare [commonChoice]);
+				int choice = Random.Range (0, veryRare.Count);
+				return veryRare [choice];
 			}
-		}
 	}
-	public void Spawn(itemName item)
+	public GameObject SpawnItem(itemName item)
 	{
 		Debug.Log (item);
 		if (item == itemName.BANANAPEEL) 
 		{
-			GameObject a = Instantiate(itemPrefabs[0],transform.position,Quaternion.Euler(new Vector3(0,90,0)))
-				as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+			return itemPrefabs[0];
 		}
 		else if (item == itemName.BEAMSWORD) 
 		{
-			GameObject a = Instantiate(itemPrefabs[1],transform.position,Quaternion.Euler(new Vector3(0,90,0))) as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+			return itemPrefabs[1];
 		}
-
+		
 		else if (item == itemName.BO_OMB)
 		{
-			GameObject a = Instantiate(itemPrefabs[2],transform.position,Quaternion.Euler(new Vector3(0,90,0))) as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+			return itemPrefabs[2];
 		}
 		else if (item == itemName.BUMPER) 
 		{
-			GameObject a = Instantiate(itemPrefabs[3],transform.position,Quaternion.Euler(new Vector3(0,90,0))) as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+			return itemPrefabs[3];
 		}
 		else if (item == itemName.BUNNYEARS) 
 		{
-			GameObject a = Instantiate(itemPrefabs[4],transform.position,Quaternion.identity) as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+			return itemPrefabs[4];
 		}
 		else if (item == itemName.FAN) 
 		{
-			GameObject a = Instantiate(itemPrefabs[5],transform.position,Quaternion.Euler(new Vector3(0,90,0))) as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+			return itemPrefabs[5];
 		}
-		else if (item == itemName.FIREFLOWER) {
-			GameObject a = Instantiate(itemPrefabs[6],transform.position,Quaternion.Euler(new Vector3(0,90,0))) as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+		else if (item == itemName.FIREFLOWER) 
+		{
+			return itemPrefabs[6];
 		}
 		else if (item == itemName.HAMMER) 
 		{
-			GameObject a = Instantiate(itemPrefabs[7],transform.position,Quaternion.Euler(new Vector3(0,90,0))) as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+			return itemPrefabs[7];
 		}
 		else if (item == itemName.HOMERUNBAT) 
 		{
-			GameObject a = Instantiate(itemPrefabs[8],transform.position,Quaternion.Euler(new Vector3(0,90,0))) as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+			return itemPrefabs[8];
 		}
 		else if (item == itemName.ICE) 
 		{
-			GameObject a = Instantiate(itemPrefabs[9],transform.position,Quaternion.Euler(new Vector3(0,90,0))) as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+			return itemPrefabs[9];
 		}
 		else if (item == itemName.LASERGUN) {
-			GameObject a = Instantiate(itemPrefabs[10],transform.position,Quaternion.Euler(new Vector3(0,90,0))) as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+			return itemPrefabs[10];
 		}
-		else if (item == itemName.METAL) {
-			GameObject a = Instantiate(itemPrefabs[11],transform.position,Quaternion.Euler(new Vector3(0,90,0))) as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+		else if (item == itemName.METAL) 
+		{
+			return itemPrefabs[11];
 		}
-		else if (item == itemName.MUSHROOM) {
-			GameObject a = Instantiate(itemPrefabs[12],transform.position,Quaternion.Euler(new Vector3(0,90,0))) as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+		else if (item == itemName.MUSHROOM) 
+		{
+			return itemPrefabs[12];
 		}
-		else if (item == itemName.PILL) {
-			GameObject a = Instantiate(itemPrefabs[13],transform.position,Quaternion.Euler(new Vector3(0,90,0))) as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+		else if (item == itemName.PILL) 
+		{
+			return itemPrefabs[13];
 		}
-		else if (item == itemName.POKEBALL) {
-			GameObject a = Instantiate(itemPrefabs[14],transform.position,Quaternion.Euler(new Vector3(0,90,0))) as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+		else if (item == itemName.POKEBALL) 
+		{
+			return itemPrefabs[14];
 		}
 		else if (item == itemName.SHELL) {
-			GameObject a = Instantiate(itemPrefabs[15],transform.position,Quaternion.Euler(new Vector3(0,90,0))) as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+			return itemPrefabs[15];
 		}
 		else if (item == itemName.SMASHBALL) 
 		{
-			GameObject a = Instantiate(itemPrefabs[16],transform.position,Quaternion.Euler(new Vector3(0,90,0))) as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+			return itemPrefabs[16];
 		}
 		else if (item == itemName.STAR) 
 		{
-			GameObject a = Instantiate(itemPrefabs[17],transform.position,Quaternion.Euler(new Vector3(0,90,0))) as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+			return itemPrefabs[17];
 		}
 		else if (item == itemName.TOMATO) 
 		{
-			GameObject a = Instantiate(itemPrefabs[18],transform.position,Quaternion.Euler(new Vector3(0,90,0))) as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+			return itemPrefabs[18];
 		}
 		else if (item == itemName.TRIPMINE) 
 		{
-			GameObject a = Instantiate(itemPrefabs[19],transform.position,Quaternion.Euler(new Vector3(0,90,0))) as GameObject;
-			GetComponent<ItemSpawner>().itemsAwake.Add(a);
+			return itemPrefabs[19];
 		}
+		else
+				return null;
 	}
-	void Update()
-	{
-		if (Input.GetKeyDown (KeyCode.Space))
-			RandomDrop ();
-	}
+
 }

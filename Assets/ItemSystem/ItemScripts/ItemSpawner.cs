@@ -10,12 +10,14 @@ public class ItemSpawner : MonoBehaviour
 
 	ItemSelector selector;
 
+
+
 	public List<GameObject> itemsAwake = new List<GameObject>();
 	// Use this for initialization
 	void Awake () 
 	{
 		selector = GetComponent<ItemSelector> ();
-		InvokeRepeating ("ItemSpawn", spawnRate, spawnRate);
+		InvokeRepeating ("SpawnChance", spawnRate, spawnRate);
 	}
 	
 	// Update is called once per frame
@@ -40,12 +42,19 @@ public class ItemSpawner : MonoBehaviour
 				moveRight = true;
 		}
 	}
-	void ItemSpawn()
+	void SpawnChance()
 	{
-		float randomChance = Random.Range (0, 100);
-		if (randomChance < 20) 
+		if (GetComponent<ItemSpawner>().itemsAwake.Count <= 10) 
 		{
-			selector.RandomDrop ();
+			float randomChance = Random.Range (0, 100);
+			if (randomChance < 20) 
+			{
+				GameObject a = Instantiate(selector.SpawnItem(selector.RandomDrop ()),
+				                           transform.position,
+				                           Quaternion.Euler(new Vector3(0,90,0))) as GameObject;
+				itemsAwake.Add(a);
+			}
 		}
 	}
+
 }

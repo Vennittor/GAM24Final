@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿
 
 public class Mushroom : ItemBaseScript 
 {
@@ -8,8 +7,8 @@ public class Mushroom : ItemBaseScript
 		//transform.parent.gameObject.GetComponent<>().MushroomEffect();
 		base.FunctionAlpha ();
 	}
-	void Update () 
+	public override void Update ()
 	{
-	
+		base.Update ();
 	}
 }

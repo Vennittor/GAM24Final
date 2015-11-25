@@ -1,86 +1,67 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class BobOmb : ItemBaseScript 
+public class Bobomb : ItemBaseScript
 {
-	public float timer;
-	public int radius;
-	public GameObject bobOmb;
-	public int damage = 50;
-	public bool faceright = true;
-	public bool called = false;
+    public GameObject rayThrower;
+   public float timer = 4;
+
+    public bool goRight = true;
+    // Use this for initialization
+    public virtual void Start ()
+    {
+        base.Start();
+	}
 	
-	// Use this for initialization
-	void Start () 
-	{
-
-	}
-
 	// Update is called once per frame
-	void Update () 
-	{
-		timer = timer * Time.deltaTime;
+	public virtual void Update ()
+    {
+        if(held == false)
+            timer -= Time.deltaTime;
+        if(timer<=0)
+        {
 
-		if (timer >= 8.0f && !held && thrown == false) 
-		{
-			int scott = Random.Range (0, 2);
-			
-			if (scott == 1) 
-			{
-				faceright = true;
-			} 
-			else 
-			{
-				faceright = false;
-			}
-			
-			if (faceright)
-			{
-				transform.Translate (Vector3.right);
-			}
-			else
-			{
-				transform.Translate (Vector3.left);
-			}
-			thrown = true;
-		}
+            Vector3 moveDir = Vector3.right;
+            if (goRight)
+            {
+                transform.rotation = Quaternion.Euler(0, 90, 0);
+                gameObject.transform.position += Vector3.right * Time.deltaTime;
+            }
+            else
+            {
+                transform.rotation = Quaternion.Euler(0, -90, 0);
+                gameObject.transform.position += Vector3.left * Time.deltaTime;
+            }
+
+            if (Physics.Raycast(rayThrower.transform.position, Vector3.down, 1))
+            {
+                Debug.Log("hitting");
+            }
+           else
+            {
+                goRight = !goRight;
+            }
+        }
+              
+        base.Update();
 	}
+    public override void FunctionAlpha()
+    {
 
-	public override void FunctionAlpha()
-	{
-		GameObject.FindGameObjectsWithTag ("Player");
-		if (held == true) 
-		{
-			//player becomes parent
-			GameObject thrower = transform.parent.gameObject;
-		}
-	}
+        base.FunctionAlpha();
+    }
+    public override void FunctionBeta()
+    {
 
-	public override void FunctionBeta()
-	{
-		Collider[] hitColliders = Physics.OverlapSphere (transform.position, radius);
-		foreach (Collider b in hitColliders) 
-		{
-			if (b.gameObject.tag == "Player")
-			{
-				//this.gameObject.GetComponent<PlayerController>.TakeDamage(damage);
-			}
-			else
-			{
-				//this.gameobject.GetComponent<Enemy>.TakeDamage(damage);
-			}
-		}
-	}
+        base.FunctionBeta();
+    }
+    Vector3 PickDirection()
+    {
+        int randRoll = Random.Range(0, 2);
+        if (randRoll == 0)
+            return Vector3.right;
+        else
+            return Vector3.left;
 
-	public void OnCollisionEnter(Collision other)
-	{
-		if (thrown == true) 
-		{
-			FunctionBeta();
-		}
-		else
-		{
-
-		}
-	}
+    }
 }
