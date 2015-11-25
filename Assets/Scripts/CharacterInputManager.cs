@@ -3,6 +3,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using HelperFunctions;
 
 public class CharacterInputManager : MonoBehaviour 
 {
@@ -37,6 +38,7 @@ public class CharacterInputManager : MonoBehaviour
 		playerStates = this.gameObject.GetComponent<PlayerStates> ();
 		playerName = this.name;
 		rigidBody = this.gameObject.GetComponent<Rigidbody> ();
+		rigidBody.freezeRotation = true;
 	}
 
 	void Start()
@@ -46,16 +48,12 @@ public class CharacterInputManager : MonoBehaviour
 
 	void Update()
 	{
-		if (Input.GetKeyDown(KeyCode.K))
-			rigidBody.AddForce(new Vector3 (2000.0f, 1000.0f, 0f));
-
 		CheckGround ();
-		InputToVariables ();
 	}
 
 	void LateUpdate()
 	{
-		//rigidBody.velocity += (new Vector3 (0, -gravity * weight, 0));
+		InputToVariables ();
 		grounded = false;
 	}
 	
@@ -66,9 +64,9 @@ public class CharacterInputManager : MonoBehaviour
 		{
 			if (grounded)
 			{
-				if (rigidBody.velocity != Vector3.zero)
+				if (!rigidBody.velocity.Approximate(1.0f))
 				{
-					rigidBody.velocity = Vector3.Lerp(rigidBody.velocity, rigidBody.velocity/100.0f, 20.0f * Time.deltaTime);
+					rigidBody.velocity = Vector3.Lerp(rigidBody.velocity, rigidBody.velocity/100.0f, 15.0f * Time.deltaTime);
 				}
 				else
 				{
@@ -101,7 +99,6 @@ public class CharacterInputManager : MonoBehaviour
 						}
 					}
 				}
-
 				if (downInput < -0.8f)
 					changeToCrouching();
 				if (shieldButton)
@@ -141,7 +138,7 @@ public class CharacterInputManager : MonoBehaviour
 				targetVelocity = new Vector3 ((rightInput),0,0);
 
 			targetVelocity *= speed/(float)weight;
-			rigidBody.velocity = (targetVelocity);
+			rigidBody.velocity = Vector3.Lerp(rigidBody.velocity, targetVelocity, 10.0f * Time.deltaTime);
 
 			yield return null;
 		}
@@ -170,17 +167,11 @@ public class CharacterInputManager : MonoBehaviour
 
 			if (leftInput < -0.4f)
 			{
-				if (rightInput > 0)
-					changeToStanding();
-				else
-					targetVelocity = new Vector3 (-1,0,0);
+				targetVelocity = new Vector3 (-1,0,0);
 			}
 			else if (rightInput > 0.4f)
 			{
-				if (leftInput < 0)
-					changeToStanding();
-				else
-					targetVelocity = new Vector3 (1,0,0);
+				targetVelocity = new Vector3 (1,0,0);
 			}
 
 			if (targetVelocity != Vector3.zero)
@@ -260,7 +251,7 @@ public class CharacterInputManager : MonoBehaviour
 				leftTotal += input;
 			}
 			leftTotal = 2*leftTotal/leftList.Count;
-			if (leftTotal < -0.25f)
+			if (leftTotal < -0.4f)
 			{
 				leftTotal = 0;
 				leftList.Clear();
@@ -284,7 +275,7 @@ public class CharacterInputManager : MonoBehaviour
 				rightTotal += input;
 			}
 			rightTotal = 2*rightTotal/rightList.Count;
-			if (rightTotal > 0.25f)
+			if (rightTotal > 0.4f)
 			{
 				rightTotal = 0;
 				rightList.Clear();
