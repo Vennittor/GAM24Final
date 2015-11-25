@@ -6,22 +6,27 @@ public class MainMenuController : MonoBehaviour
 {
 	public float colorChangeSpeed;
 
+	public bool fadeIn;
+
 	public Image background;
 
 	// Use this for initialization
 	void Start () 
 	{
-		
+		fadeIn = true;
 	}
 	
 	// Update is called once per frame
 	void Update () 
 	{
-		Background ();
+		FadeIn ();
 	}
 
-	void Background ()
+	void FadeIn ()
 	{
-		background.color = Color.Lerp (background.color,new Color(0.9f,0.9f,0.9f),colorChangeSpeed);
+		if (fadeIn == true) 
+		{
+			background.color = Color.Lerp (background.color,new Color(1,1,1),colorChangeSpeed);
+		}
 	}
 }
