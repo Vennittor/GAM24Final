@@ -1,191 +1,140 @@
-﻿using UnityEngine;
+﻿//Player States will handle the switching between the movement states and will handle the active disabled and protective states
+
+
+using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 public class PlayerStates : MonoBehaviour 
 {
-	/*
-	 *	=== Ground States ===
-	 *	-Stand Still
-	 *	-Walking
-	 *	-Sprinting
-	 *	-Being Grabbed
-	 *	-Lying Down
-	 *	-Grabbing
-	 *	-Item Held standing
-	 *	-Item Held Walking
-	 *	-Item Held Sprinting
-	 *	-Flinching
-	 *	-Grounded
-	 *
-	 *	=== Air States ===
-	 * 	-Helpless
-	 * 	
-	 * 
-	 * 
-	 * 	=== Shielded State === not any more
-	 * 
-	 *  === Tumble States === ????
-	 */
-	public float speed;
-	public PlayerMovement pMovement;
-	Job gStand;
-	string player;
-	float walkSpeed = 10.0f;
-	float sprintSpeed = 15.0f;
-	bool grounded;
-	float sprintInput;
+	//Switch state to determine which movement state it is currently in
+	//Standing, Walking, Crouching, Sprinting, Air, OnLedge, Shielding, Grabbing
 
-	public enum State
+	//Will have conditions that change the current movement state the character is in
+
+	//Active disabled and protective states are held in a list
+	//when one is added to the list it starts a (timer or coroutine???) modifying inputs
+
+	CharacterInputManager inputManager;
+	public enum movementStates
 	{
-		//ground states start with a g
-		gStand, gWalk, gSprint, gGrabbed, gGrabbing, gLying, gHeldItemStand, gHeldItemWalk, gHeldItemSprint, gFlinch, gGrounded,
-		aAir
-		//green, yellow, red, 
+		STANDING, WALKING, CROUCHING, SPRINTING, AIR, ONLEDGE, SHIELDING, GRABBING
 	}
-	[ReadOnlyAttribute][SerializeField] private State vState;
-	public State state
+	public enum disabledAndProtectiveStates
+	{
+		GRABBED, HELPLESS, BURIED, ASLEEP, FROZEN, REELING, STUNNED, FLINCHED, SLOWMO, LYING, VULNERABLE, THROWN,
+		NOKNOCKBACK, NODAMAGE, UNCOLLIDABLE, GRABIMMUNE, ABILITYLOCK, FLINCHIMMUNE
+	}
+
+	[SerializeField][ReadOnlyAttribute]
+	private movementStates _moveState;
+	public movementStates moveState
 	{
 		get
 		{
-			return vState;
+			return _moveState;
 		}
 		set
 		{
-			ExitState(vState);
-			vState = value;
-			EnterState(vState);
+			ExitState(_moveState);
+			_moveState = value;
+			EnterState(_moveState);
 		}
 	}
 
 	void Awake()
 	{
-		state = State.gStand;
-		pMovement = this.GetComponent<PlayerMovement> ();
-		player = this.name;
-		sprintInput = 0;
+		inputManager = this.gameObject.GetComponent<CharacterInputManager> ();
 	}
 
-	void FixedUpdate()
+	void EnterState (movementStates state)
 	{
-		CheckGround ();
-	}
-
-	void CheckGround()
-	{
-		RaycastHit hit;
-		
-		Debug.DrawRay (transform.position, 0.5f * Vector3.down, Color.green);
-		if (Physics.Raycast(transform.position, Vector3.down, out hit, 0.5f))
+		switch (state)
 		{
-			if (hit.collider.tag == "Ground")
-			{
-				grounded = true;
-			}
-		}
-	}
-
-	void EnterState (State stateEntered)
-	{
-		switch (stateEntered)
-		{
-		case State.gStand:
-			this.gameObject.GetComponent<MeshRenderer>().material.color = Color.green;
-			Job gStand = new Job(groundStand(
-				()=>{state = State.gWalk;}, 
-				()=>{state = State.aAir;},
-			    ()=>{state = State.gSprint;},
-				()=>{state = State.gGrabbing;}), true);
-
+		case movementStates.STANDING:
+			this.GetComponent<MeshRenderer>().material.color = Color.black;
+			inputManager.standing = new Job (inputManager.standingState(
+											()=> {moveState = movementStates.WALKING;},
+											()=> {moveState = movementStates.SPRINTING;},
+											()=> {moveState = movementStates.AIR;},
+											()=> {moveState = movementStates.CROUCHING;},
+											()=> {moveState = movementStates.SHIELDING;},
+											()=> {moveState = movementStates.GRABBING;}),true);
 			break;
-
-		case State.gWalk:
-			this.gameObject.GetComponent<MeshRenderer>().material.color = Color.yellow;
-			speed = walkSpeed;
-
+		case movementStates.WALKING:
+			this.GetComponent<MeshRenderer>().material.color = Color.blue;
+			inputManager.walking = new Job (inputManager.walkingState(
+											()=> {moveState = movementStates.STANDING;},
+											()=> {moveState = movementStates.AIR;},
+											()=> {moveState = movementStates.SHIELDING;},
+											()=> {moveState = movementStates.GRABBING;}),true);
 			break;
-
-		case State.gSprint:
-			this.gameObject.GetComponent<MeshRenderer>().material.color = Color.red;
-			speed = sprintSpeed;
-			
+		case movementStates.SPRINTING:
+			this.GetComponent<MeshRenderer>().material.color = Color.cyan;
+			inputManager.sprinting = new Job (inputManager.sprintingState(
+											()=> {moveState = movementStates.STANDING;},
+											()=> {moveState = movementStates.AIR;},
+											()=> {moveState = movementStates.SHIELDING;},
+											()=> {moveState = movementStates.GRABBING;}),true);
 			break;
-
-		case State.gGrabbing:
-			this.gameObject.GetComponent<MeshRenderer>().material.color = Color.black;
-
+		case movementStates.AIR:
+			this.GetComponent<MeshRenderer>().material.color = Color.magenta;
+			inputManager.air = new Job (inputManager.airState(
+										()=> {moveState = movementStates.STANDING;}),true);
 			break;
-
-		case State.aAir:
-			this.gameObject.GetComponent<MeshRenderer>().material.color = Color.blue;
-			
+		case movementStates.CROUCHING:
+			this.GetComponent<MeshRenderer>().material.color = Color.gray;
+			break;
+		case movementStates.GRABBING:
+			this.GetComponent<MeshRenderer>().material.color = Color.green;
+			break;
+		case movementStates.SHIELDING:
+			this.GetComponent<MeshRenderer>().material.color = Color.red;
+			break;
+		case movementStates.ONLEDGE:
+			this.GetComponent<MeshRenderer>().material.color = Color.yellow;
 			break;
 		}
 	}
 
-	void ExitState (State stateExited)
+	void ExitState (movementStates state)
 	{
-		switch(stateExited)
+		switch (state)
 		{
-		case State.gStand:
-			if (gStand != null) gStand.kill();
+		case movementStates.STANDING:
+			if (inputManager.standing != null) 
+				inputManager.standing.kill();
 			break;
-		case State.gWalk:
+		case movementStates.WALKING:
+			if (inputManager.walking != null) 
+				inputManager.walking.kill();
 			break;
-		case State.gSprint:
+		case movementStates.SPRINTING:
+			if (inputManager.sprinting != null) 
+				inputManager.sprinting.kill();
 			break;
-		case State.aAir:
+		case movementStates.CROUCHING:
+			if (inputManager.crouching != null)
+				inputManager.crouching.kill();
+			break;
+		case movementStates.GRABBING:
+			if (inputManager.grabbing != null)
+				inputManager.grabbing.kill();
+			break;
+		case movementStates.AIR:
+			if (inputManager.air != null)
+				inputManager.air.kill();
+			break;
+		case movementStates.SHIELDING:
+			if (inputManager.shielding != null)
+				inputManager.shielding.kill();
+			break;
+		case movementStates.ONLEDGE:
+			if (inputManager.onLedge != null)
+				inputManager.onLedge.kill();
 			break;
 		}
 	}
 
-	IEnumerator groundStand(System.Action changeToGWalk, System.Action changeToAAir, System.Action changeToGSprint, System.Action changeToGGrabbing)
-	{
-		while (state == State.gStand)
-		{
-			float tempInput = sprintInput;
-			sprintInput = Input.GetAxis(player + "_Horizontal");
-			if (Input.GetButtonDown(player + "_Grab"))
-			{	
-				if(pMovement.CheckGrab())
-				{
-					changeToGGrabbing();
-				}
-			}
-			if (Mathf.Abs(sprintInput) - Mathf.Abs(tempInput) > 0.1f && grounded)
-			{
-				changeToGSprint();
-			}
-			else if (Mathf.Abs(Input.GetAxis(player + "_Horizontal")) > 0.01f && grounded)
-			{
-				changeToGWalk();
-			}
-			else if (!grounded)
-			{
-				changeToAAir();
-			}
-			yield return null;
-		}
-	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
