@@ -14,7 +14,7 @@ namespace HelperFunctions
 		}
 		public static bool Approximate(this Vector3 currentVector, float closeToX)
 		{
-			if (Mathf.Abs (currentVector.x) <= closeToX)
+			if (Mathf.Abs (currentVector.x) <= Mathf.Abs(closeToX))
 				return true;
 			else
 				return false;

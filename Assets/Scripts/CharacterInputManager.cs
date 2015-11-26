@@ -10,35 +10,46 @@ public class CharacterInputManager : MonoBehaviour
 	//Inputs start at the top
 	//flow down through disabled states
 	//get passed as inputs to current active movement state
-
+	
 	// GET UNIQUE CHARACTER STATS HERE
-	public int weight = 1; 
+
+	public float weight = 1; 
 	public float speed = 20.0f;
 	public float jumpHeight = 10.0f;
-	public float gravity = 10.0f;
+	public int jumpMax = 1;
 
-	List<float> leftList = new List<float> ();
-	List<float> rightList = new List<float> ();
-	float leftTotal, rightTotal;
+	int jumpCount;
 
-	Rigidbody rigidBody;
-
-	bool grounded;
-	
-	float leftInput, rightInput, upInput, downInput;
-	bool shieldButton, jumpButton, grabButton, attackButton, specialButton;
-
+	//Jobs
 	public Job standing, walking, crouching, sprinting, air, onLedge, shielding, grabbing;
 
+	//Components
 	string playerName;
 	PlayerStates playerStates;
+	Rigidbody rigidBody;
+	Collider collider;
+
+	//Ground Check
+	float groundRayCount = 4;
+	float raySpacing;
+	bool grounded;
+
+	//Input
+	float leftInput, rightInput, upInput, downInput;
+	bool shieldButton, jumpButton, grabButton, attackButton, specialButton;
+	List<float> leftList = new List<float> ();
+	List<float> rightList = new List<float> ();
+	List<float> downList = new List<float> ();
+	float leftTotal, rightTotal, downTotal;
 
 	void Awake()
 	{
 		playerStates = this.gameObject.GetComponent<PlayerStates> ();
 		playerName = this.name;
 		rigidBody = this.gameObject.GetComponent<Rigidbody> ();
+		collider = this.gameObject.GetComponent<Collider> ();
 		rigidBody.freezeRotation = true;
+		jumpCount = jumpMax;
 	}
 
 	void Start()
@@ -64,9 +75,14 @@ public class CharacterInputManager : MonoBehaviour
 		{
 			if (grounded)
 			{
+				if (jumpButton && jumpCount == jumpMax)
+				{
+					//Input -> Physics -> Gravity -> set to -80
+					rigidBody.AddForce(0f, 16 * ((jumpHeight * jumpHeight) / weight), 0f);
+				}
 				if (!rigidBody.velocity.Approximate(1.0f))
 				{
-					rigidBody.velocity = Vector3.Lerp(rigidBody.velocity, rigidBody.velocity/100.0f, 15.0f * Time.deltaTime);
+					rigidBody.velocity = Vector3.Lerp(rigidBody.velocity, rigidBody.velocity/100.0f, 5.0f * Time.deltaTime);
 				}
 				else
 				{
@@ -99,8 +115,23 @@ public class CharacterInputManager : MonoBehaviour
 						}
 					}
 				}
-				if (downInput < -0.8f)
-					changeToCrouching();
+				if (downInput < 0f)
+				{
+					downList.Add(downInput);
+					if (downList.Count > 3)
+						downList.RemoveAt(0);
+
+					if (downList.Count == 3)
+					{
+						if (PlatformDown)
+						{
+							Physics.IgnoreLayerCollision(0,8, true);
+						}
+						else
+							changeToCrouching();
+					}
+				}
+
 				if (shieldButton)
 					changeToShielding();
 				if (grabButton)
@@ -118,9 +149,14 @@ public class CharacterInputManager : MonoBehaviour
 		{
 			if (grounded)
 			{
+				if (jumpButton && jumpCount == jumpMax)
+				{
+					//Input -> Physics -> Gravity -> set to -80
+					rigidBody.AddForce(0f, 16 * ((jumpHeight * jumpHeight) / weight), 0f);
+				}
 				if (leftInput == 0 && rightInput == 0)
 					changeToStanding();
-				else if (downInput < -0.8f)
+				else if (downInput < -0.8f)	
 					changeToStanding();
 				if (shieldButton)
 					changeToShielding();
@@ -137,7 +173,7 @@ public class CharacterInputManager : MonoBehaviour
 			else
 				targetVelocity = new Vector3 ((rightInput),0,0);
 
-			targetVelocity *= speed/(float)weight;
+			targetVelocity *= speed/weight;
 			rigidBody.velocity = Vector3.Lerp(rigidBody.velocity, targetVelocity, 10.0f * Time.deltaTime);
 
 			yield return null;
@@ -151,6 +187,12 @@ public class CharacterInputManager : MonoBehaviour
 		{
 			if (grounded)		
 			{
+				if (jumpButton && jumpCount == jumpMax)
+				{
+					//Input -> Physics -> Gravity -> set to -80
+					rigidBody.velocity /= 5.0f;
+					rigidBody.AddForce(0f, 16 * ((jumpHeight * jumpHeight) / weight), 0f);
+				}
 				if (leftInput == 0 && rightInput == 0)
 					changeToStanding();
 				if (downInput < -0.8f)
@@ -191,6 +233,65 @@ public class CharacterInputManager : MonoBehaviour
 			if (grounded)
 				changeToStanding ();
 
+			if (jumpButton && jumpCount > 0)
+			{
+				//Input -> Physics -> Gravity -> set to -80
+				rigidBody.velocity = new Vector3(rigidBody.velocity.x, 0f, 0f);
+				rigidBody.AddForce(0f, (16 * ((jumpHeight * jumpHeight) / weight)) - 100 * (jumpMax-jumpCount), 0f);
+				jumpCount--;
+			}
+			Vector3 targetVelocity = Vector3.zero;
+
+			if (leftInput < -0.15f)
+				targetVelocity = new Vector3 (leftInput, 0, 0);
+			else
+				targetVelocity = new Vector3 (rightInput, 0, 0);
+
+			Physics.IgnoreLayerCollision(0,8, false);
+			if (downInput < -0.1f)
+			{
+				Physics.IgnoreLayerCollision(0,8, true);
+				targetVelocity += new Vector3 (0, downInput, 0);
+			}
+
+			targetVelocity *= speed/weight;
+
+			rigidBody.velocity = Vector3.Lerp(rigidBody.velocity, new Vector3 (targetVelocity.x/1.5f ,rigidBody.velocity.y + targetVelocity.y, 0f), 4.0f * Time.deltaTime);
+
+			yield return null;
+		}
+	}
+
+	public IEnumerator crouchState (System.Action changeToStanding, System.Action changeToShielding, System.Action changeToAir)
+	{
+		while (playerStates.moveState == PlayerStates.movementStates.CROUCHING)
+		{
+			if (jumpButton && jumpCount == jumpMax)
+			{
+				//Input -> Physics -> Gravity -> set to -80
+				rigidBody.AddForce(0f, 16 * ((jumpHeight * jumpHeight) / weight), 0f);
+			}
+			if (grounded)
+			{
+				if (downInput > -0.1f)
+					changeToStanding();
+				if (shieldButton)
+					changeToShielding();
+			}
+			else
+				changeToAir();
+
+			Vector3 targetVelocity = Vector3.zero;
+
+			if (leftInput < -0.15f)
+				targetVelocity = new Vector3 (leftInput, 0, 0);
+			else
+				targetVelocity = new Vector3 (rightInput, 0, 0);
+
+			targetVelocity *= speed/weight;
+			
+			rigidBody.velocity = Vector3.Lerp(rigidBody.velocity, targetVelocity/1.5f, 10.0f * Time.deltaTime);
+
 			yield return null;
 		}
 	}
@@ -238,9 +339,29 @@ public class CharacterInputManager : MonoBehaviour
 
 
 
-
-
-
+	public bool PlatformDown
+	{
+		get
+		{
+			foreach (float input in downList)
+			{
+				downTotal += input;
+			}
+			downTotal = 2*downTotal/downList.Count;
+			if (downTotal < -0.7f)
+			{
+				downTotal = 0;
+				downList.Clear();
+				return true;
+			}
+			else
+			{
+				downTotal = 0;
+				downList.Clear();
+				return false;
+			}
+		}
+	}
 
 	public bool LeftSprint
 	{
@@ -289,13 +410,28 @@ public class CharacterInputManager : MonoBehaviour
 			}
 		}
 	}
-	
+
 	void CheckGround()
 	{
-		RaycastHit hit;
-		if (Physics.Raycast(transform.position, Vector3.down, out hit, 1.1f)) 
-			if (hit.collider.tag == "Ground")
-				grounded = true;
+		Bounds bounds = collider.bounds;
+		bounds.Expand (0.015f * -2);
+
+		Vector3 bottomLeft = new Vector3 (bounds.min.x, bounds.min.y, bounds.min.z);
+		raySpacing = bounds.size.x / (groundRayCount - 1);
+
+		for (int i=0; i < groundRayCount; i++)
+		{
+			Debug.DrawRay(bottomLeft + Vector3.right * raySpacing * i, Vector3.down * 0.1f, Color.red);
+			RaycastHit hit;
+			if (Physics.Raycast(bottomLeft + Vector3.right * raySpacing * i, Vector3.down, out hit, 0.1f)) 
+		    {
+				if (hit.collider.tag == "Ground")
+				{
+					jumpCount = jumpMax;
+					grounded = true;
+				}
+			}
+		}
 	}
 
 	void InputToVariables()
@@ -303,13 +439,9 @@ public class CharacterInputManager : MonoBehaviour
 		if (Input.GetAxis (playerName + "_Horizontal") != 0)
 		{
 			if (Input.GetAxis (playerName + "_Horizontal") < 0)
-			{
 				leftInput = Input.GetAxis (playerName + "_Horizontal");
-			}
 			else if (Input.GetAxis (playerName + "_Horizontal") > 0)
-			{
 				rightInput = Input.GetAxis (playerName + "_Horizontal");
-			}
 		}
 		else
 		{
@@ -354,23 +486,3 @@ public class CharacterInputManager : MonoBehaviour
 //			specialButton = false;
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

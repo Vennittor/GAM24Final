@@ -85,6 +85,10 @@ public class PlayerStates : MonoBehaviour
 			break;
 		case movementStates.CROUCHING:
 			this.GetComponent<MeshRenderer>().material.color = Color.gray;
+			inputManager.crouching = new Job (inputManager.crouchState(
+											()=> {moveState = movementStates.STANDING;},
+											()=> {moveState = movementStates.SHIELDING;},
+											()=> {moveState = movementStates.AIR;}),true);
 			break;
 		case movementStates.GRABBING:
 			this.GetComponent<MeshRenderer>().material.color = Color.green;
