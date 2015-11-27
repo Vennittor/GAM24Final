@@ -6,6 +6,8 @@ public class CombatGUIController : MonoBehaviour
  {
 	public int playerCount;
 
+	public GameObject playerDataHolder;
+
 	//player one
 	public Image pOneCharacterPortrait;
 	public Image pOneStockImageOne;
@@ -61,6 +63,8 @@ public class CombatGUIController : MonoBehaviour
 	// Use this for initialization
 	void Start () 
 	{
+		playerDataHolder = GameObject.Find ("PlayerDataHolder");
+		playerCount = playerDataHolder.GetComponent<PlayerDataHolder>().playerCount;
 		playerOne = GameObject.FindGameObjectWithTag ("Player One");
 //		playerTwo = GameObject.FindGameObjectWithTag ("Player Two");
 	}
