@@ -6,11 +6,6 @@ public class PlayerController : MonoBehaviour
 {
 	public float health;
 
-	public Sprite characterPortrait;
-	public Sprite stockImage;
-
-	public string name;
-
 	// Use this for initialization
 	void Start () 
 	{
