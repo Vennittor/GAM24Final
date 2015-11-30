@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine.UI;
 
-public class PlayerController : MonoBehaviour 
+public class TempPlayerController : MonoBehaviour 
 {
 	public int lives = 2;
 
