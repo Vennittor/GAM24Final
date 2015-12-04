@@ -10,21 +10,23 @@ public class CharacterInputManager : MonoBehaviour
 	//Inputs start at the top
 	//flow down through disabled states
 	//get passed as inputs to current active movement state
-	
-	// GET UNIQUE CHARACTER STATS HERE
 
-	public float weight = 1; 
-	public float speed = 20.0f;
-	public float jumpHeight = 10.0f;
-	public int jumpMax = 1;
-
+	//Character Stats
+	float weight; 
+	float speed;
+	float jumpHeight;
+	int jumpMax;
 	int jumpCount;
-
+	
 	//Jobs
 	public Job standing, walking, crouching, sprinting, air, onLedge, shielding, grabbing;
 
+	//Timers
+	Timer smashDelay;
+	bool started;
+
 	//Components
-	string playerName;
+	public string playerName;
 	PlayerStates playerStates;
 	Rigidbody rigidBody;
 	Collider collider;
@@ -33,10 +35,11 @@ public class CharacterInputManager : MonoBehaviour
 	float groundRayCount = 4;
 	float raySpacing;
 	bool grounded;
+	BaseCharacter character;
 
 	//Input
-	float leftInput, rightInput, upInput, downInput;
-	bool shieldButton, jumpButton, grabButton, attackButton, specialButton;
+	public float leftInput, rightInput, upInput, downInput;
+	public bool shieldButton, jumpButton, grabButton, attackButton, specialButton, spamButton;
 	List<float> leftList = new List<float> ();
 	List<float> rightList = new List<float> ();
 	List<float> downList = new List<float> ();
@@ -48,6 +51,7 @@ public class CharacterInputManager : MonoBehaviour
 		playerName = this.name;
 		rigidBody = this.gameObject.GetComponent<Rigidbody> ();
 		collider = this.gameObject.GetComponent<Collider> ();
+		collider.material = null;
 		rigidBody.freezeRotation = true;
 		jumpCount = jumpMax;
 	}
@@ -55,10 +59,18 @@ public class CharacterInputManager : MonoBehaviour
 	void Start()
 	{
 		playerStates.moveState = PlayerStates.movementStates.STANDING;
+		character = GetComponent<BaseCharacter> ();
+		weight = character.weight;
+		speed = character.speed;
+		jumpMax = character.jumpMax;
+		jumpHeight = character.jumpHeight;
+		Physics.IgnoreLayerCollision(9,9, true);
 	}
 
 	void Update()
 	{
+		if (Input.GetKeyDown (KeyCode.Space))
+			rigidBody.AddForce (10000f, 0f, 0f);
 		CheckGround ();
 	}
 
@@ -80,9 +92,59 @@ public class CharacterInputManager : MonoBehaviour
 					//Input -> Physics -> Gravity -> set to -80
 					rigidBody.AddForce(0f, 16 * ((jumpHeight * jumpHeight) / weight), 0f);
 				}
+
+				if (leftInput < -0.1f && attackButton || rightInput > 0.1f && attackButton)
+				{
+					yield return null;
+					if (leftInput < -0.7f || rightInput > 0.7f)
+						character.LeftRightSmashA();
+					else
+						character.LeftRightA();
+				}
+				else if (downInput < -0.1f && attackButton)
+				{
+					yield return null;
+					if (downInput < -0.85f)
+						character.DownSmashA();
+					else
+						character.DownA();
+				}
+				else if (upInput > 0.1f && attackButton)
+				{
+					yield return null;
+					if (upInput > 0.7f)
+						character.UpSmashA();
+					else 
+						character.UpA();
+				}
+
+				if (character.attackCount >= 2)
+				{
+					if (spamButton && leftInput >= -0.1f && rightInput <= 0.1f)
+						character.ComboA();
+				}
+				else
+				{
+					if (attackButton && leftInput >= -0.1f && rightInput <= 0.1f)
+						character.ComboA();
+					else if (spamButton && leftInput >= -0.1f && rightInput <= 0.1f)
+						character.StandingA();
+				}
+
+				if (leftInput < -0.1f && specialButton || rightInput > 0.1f && specialButton)
+					character.LeftRightSpecialB();
+				else if (upInput > 0.1f && specialButton)
+					character.UpSpecialB();
+				else if (downInput < -0.1f && specialButton)
+					character.DownSpecialB();
+				else if (specialButton)
+					character.NeutralB();
+
+
 				if (!rigidBody.velocity.Approximate(1.0f))
 				{
-					rigidBody.velocity = Vector3.Lerp(rigidBody.velocity, rigidBody.velocity/100.0f, 5.0f * Time.deltaTime);
+					if (!playerStates.disabledStates.Contains(PlayerStates.disabledAndProtectiveStates.ABILITYLOCK))
+						rigidBody.velocity = Vector3.Lerp(rigidBody.velocity, rigidBody.velocity/100.0f, 0.25f * Time.deltaTime);
 				}
 				else
 				{
@@ -94,6 +156,8 @@ public class CharacterInputManager : MonoBehaviour
 
 						if (leftList.Count == 3)
 						{
+							transform.rotation = Quaternion.Euler(new Vector3 (0f, 180f, 0f));
+
 							if (LeftSprint)
 								changeToSprinting();
 							else
@@ -108,37 +172,40 @@ public class CharacterInputManager : MonoBehaviour
 
 						if (rightList.Count == 3)
 						{
+							transform.rotation = Quaternion.identity;
 							if (RightSprint)
 								changeToSprinting();
 							else
 								changeToWalking();
 						}
 					}
-				}
-				if (downInput < 0f)
-				{
-					downList.Add(downInput);
-					if (downList.Count > 3)
-						downList.RemoveAt(0);
 
-					if (downList.Count == 3)
+					if (downInput < 0f)
 					{
-						if (PlatformDown)
+						downList.Add(downInput);
+						if (downList.Count > 3)
+							downList.RemoveAt(0);
+						
+						if (downList.Count == 3)
 						{
-							Physics.IgnoreLayerCollision(0,8, true);
+							if (PlatformDown)
+							{
+								Physics.IgnoreLayerCollision(9,8, true);
+							}
+							else
+								changeToCrouching();
 						}
-						else
-							changeToCrouching();
 					}
+					
+					if (shieldButton)
+						changeToShielding();
+					if (grabButton)
+						changeToGrabbing();	
 				}
-
-				if (shieldButton)
-					changeToShielding();
-				if (grabButton)
-					changeToGrabbing();	
 			}
 			else
 				changeToAir();
+
 			yield return null;
 		}
 	}
@@ -154,6 +221,23 @@ public class CharacterInputManager : MonoBehaviour
 					//Input -> Physics -> Gravity -> set to -80
 					rigidBody.AddForce(0f, 16 * ((jumpHeight * jumpHeight) / weight), 0f);
 				}
+
+				if (leftInput < -0.1f && attackButton || rightInput > 0.1f && attackButton)
+				{
+					yield return null;
+					if (leftInput < -0.7f || rightInput > 0.7f)
+						character.LeftRightSmashA();
+					else
+						character.LeftRightA();
+				}
+
+				if (leftInput < -0.1f && specialButton || rightInput > 0.1f && specialButton)
+					character.LeftRightSpecialB();
+				else if (upInput > 0.1f && specialButton)
+					character.UpSpecialB();
+				else if (downInput < -0.1f && specialButton)
+					character.DownSpecialB();
+
 				if (leftInput == 0 && rightInput == 0)
 					changeToStanding();
 				else if (downInput < -0.8f)	
@@ -193,7 +277,17 @@ public class CharacterInputManager : MonoBehaviour
 					rigidBody.velocity /= 5.0f;
 					rigidBody.AddForce(0f, 16 * ((jumpHeight * jumpHeight) / weight), 0f);
 				}
-				if (leftInput == 0 && rightInput == 0)
+
+				if (attackButton)
+					character.SprintA();
+				if (leftInput < -0.1f && specialButton || rightInput > 0.1f && specialButton)
+					character.LeftRightSpecialB();
+				else if (upInput > 0.1f && specialButton)
+					character.UpSpecialB();
+				else if (downInput < -0.1f && specialButton)
+					character.DownSpecialB();
+
+				if (leftInput > -0.1f && rightInput < 0.1f)
 					changeToStanding();
 				if (downInput < -0.8f)
 					changeToStanding();
@@ -231,7 +325,29 @@ public class CharacterInputManager : MonoBehaviour
 		while (playerStates.moveState == PlayerStates.movementStates.AIR)
 		{
 			if (grounded)
+			{
 				changeToStanding ();
+				character.StopAllCoroutines();
+				character.ResetAttack();
+			}
+
+			if (upInput > 0.2f && attackButton)
+				character.UpAir();
+			else if (leftInput < -0.1f && attackButton|| rightInput > 0.1f && attackButton)
+				character.LeftRightAir();
+			else if (downInput < -0.3f && attackButton)
+				character.DownAir();
+			else if (attackButton)
+				character.NeutralAAir();
+
+			if (leftInput < -0.1f && specialButton || rightInput > 0.1f && specialButton)
+				character.LeftRightSpecialB();
+			else if (upInput > 0.1f && specialButton)
+				character.UpSpecialB();
+			else if (downInput < -0.1f && specialButton)
+				character.DownSpecialB();
+			else if (specialButton)
+				character.NeutralB();
 
 			if (jumpButton && jumpCount > 0)
 			{
@@ -243,20 +359,27 @@ public class CharacterInputManager : MonoBehaviour
 			Vector3 targetVelocity = Vector3.zero;
 
 			if (leftInput < -0.15f)
+			{
+				transform.rotation = Quaternion.Euler(new Vector3 (0f, 180f, 0f));
 				targetVelocity = new Vector3 (leftInput, 0, 0);
-			else
+			}
+			else if (rightInput > 0.15f)
+			{
+				transform.rotation = Quaternion.identity;
 				targetVelocity = new Vector3 (rightInput, 0, 0);
+			}
 
-			Physics.IgnoreLayerCollision(0,8, false);
+			Physics.IgnoreLayerCollision(9,8, false);
 			if (downInput < -0.1f)
 			{
-				Physics.IgnoreLayerCollision(0,8, true);
+				Physics.IgnoreLayerCollision(9,8, true);
 				targetVelocity += new Vector3 (0, downInput, 0);
 			}
 
 			targetVelocity *= speed/weight;
 
-			rigidBody.velocity = Vector3.Lerp(rigidBody.velocity, new Vector3 (targetVelocity.x/1.5f ,rigidBody.velocity.y + targetVelocity.y, 0f), 4.0f * Time.deltaTime);
+			if (targetVelocity != null)
+				rigidBody.velocity = Vector3.Lerp(rigidBody.velocity, new Vector3 (targetVelocity.x/1.5f ,rigidBody.velocity.y + targetVelocity.y, 0f), 4.0f * Time.deltaTime);
 
 			yield return null;
 		}
@@ -273,6 +396,22 @@ public class CharacterInputManager : MonoBehaviour
 			}
 			if (grounded)
 			{
+				if (downInput < -0.1f && attackButton)
+				{
+					yield return null;
+					if (downInput < -0.85f)
+						character.DownSmashA();
+					else
+						character.DownA();
+				}
+
+				if (leftInput < -0.1f && specialButton || rightInput > 0.1f && specialButton)
+					character.LeftRightSpecialB();
+				else if (upInput > 0.1f && specialButton)
+					character.UpSpecialB();
+				else if (downInput < -0.1f && specialButton)
+					character.DownSpecialB();
+
 				if (downInput > -0.1f)
 					changeToStanding();
 				if (shieldButton)
@@ -284,9 +423,15 @@ public class CharacterInputManager : MonoBehaviour
 			Vector3 targetVelocity = Vector3.zero;
 
 			if (leftInput < -0.15f)
+			{
+				transform.rotation = Quaternion.Euler(new Vector3 (0f, 180f, 0f));
 				targetVelocity = new Vector3 (leftInput, 0, 0);
+			}
 			else
+			{
+				transform.rotation = Quaternion.identity;
 				targetVelocity = new Vector3 (rightInput, 0, 0);
+			}
 
 			targetVelocity *= speed/weight;
 			
@@ -295,50 +440,7 @@ public class CharacterInputManager : MonoBehaviour
 			yield return null;
 		}
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	
 	public bool PlatformDown
 	{
 		get
@@ -475,14 +577,19 @@ public class CharacterInputManager : MonoBehaviour
 		else
 			grabButton = false;
 
-//		if (Input.GetButton (playerName + "_Attack"))
-//			attackButton = true;
-//		else
-//			attackButton = false;
-//
-//		if (Input.GetButton (playerName + "_Special"))
-//			specialButton = true;
-//		else
-//			specialButton = false;
+		if (Input.GetButtonDown (playerName + "_Attack"))
+			attackButton = true;
+		else
+			attackButton = false;
+
+		if (Input.GetButton (playerName + "_Attack"))
+			spamButton = true;
+		else
+			spamButton = false;
+
+		if (Input.GetButton (playerName + "_Special"))
+			specialButton = true;
+		else
+			specialButton = false;
 	}
 }

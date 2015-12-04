@@ -9,22 +9,16 @@ public class HitCollider : MonoBehaviour
 	/// 
 	/// if debug is on, draw the mesh and make it the character colour (red, blue, yellow, green)
 	/// that the player swinging it is
+	public GameObject mainPlayer;
 
 
 
-
-
-
-
-
-
-	public bool hit;
 
 	void OnTriggerEnter(Collider other)
 	{
-		if (other.gameObject.tag == "Player")
+		if (other.gameObject.tag == "Player" && other.gameObject != mainPlayer)
 		{
-			hit = true;
+			print ("hit");
 		}
 	}
 }

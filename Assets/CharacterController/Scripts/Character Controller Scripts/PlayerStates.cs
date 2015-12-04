@@ -21,6 +21,8 @@ public class PlayerStates : MonoBehaviour
 	{
 		STANDING, WALKING, CROUCHING, SPRINTING, AIR, ONLEDGE, SHIELDING, GRABBING
 	}
+
+	public List<disabledAndProtectiveStates> disabledStates = new List<disabledAndProtectiveStates>();
 	public enum disabledAndProtectiveStates
 	{
 		GRABBED, HELPLESS, BURIED, ASLEEP, FROZEN, REELING, STUNNED, FLINCHED, SLOWMO, LYING, VULNERABLE, THROWN,
