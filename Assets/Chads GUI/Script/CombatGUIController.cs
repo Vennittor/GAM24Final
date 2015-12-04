@@ -64,8 +64,8 @@ public class CombatGUIController : MonoBehaviour
 	// Use this for initialization
 	void Start () 
 	{
-		playerDataHolder = GameObject.Find ("PlayerDataHolder");
-		playerCount = playerDataHolder.GetComponent<PlayerDataHolder>().playerCount;
+		playerDataHolder = GameObject.Find ("DataHolder");
+		playerCount = playerDataHolder.GetComponent<DataHolder>().playerCount;
 	}
 	
 	// Update is called once per frame
@@ -82,10 +82,10 @@ public class CombatGUIController : MonoBehaviour
 	{
 		playerOne = gameManager.GetComponent<GameManager> ().playerOne;
 		pOneCurrentPercent = playerOne.GetComponent<TempPlayerController> ().health;
-		pOneName.text = playerDataHolder.GetComponent<PlayerDataHolder>().pOneCharacterName;
-		pOneCharacterPortrait.sprite = playerDataHolder.GetComponent<PlayerDataHolder> ().pOnePortrait;
-		pOneStockImageOne.sprite = playerDataHolder.GetComponent<PlayerDataHolder> ().pOneStock;
-		pOneStockImageTwo.sprite = playerDataHolder.GetComponent<PlayerDataHolder> ().pOneStock;
+		pOneName.text = playerDataHolder.GetComponent<DataHolder>().pOneCharacterName;
+		pOneCharacterPortrait.sprite = playerDataHolder.GetComponent<DataHolder> ().pOnePortrait;
+		pOneStockImageOne.sprite = playerDataHolder.GetComponent<DataHolder> ().pOneStock;
+		pOneStockImageTwo.sprite = playerDataHolder.GetComponent<DataHolder> ().pOneStock;
 		pOnePercentText.text = "" + (int)pOneCurrentPercent + "%";
 
 		//Stock Images
@@ -128,10 +128,10 @@ public class CombatGUIController : MonoBehaviour
 	{ 
 		playerTwo = gameManager.GetComponent<GameManager> ().playerTwo;
 		pTwoCurrentPercent = playerTwo.GetComponent<TempPlayerController> ().health;
-		pTwoName.text = playerDataHolder.GetComponent<PlayerDataHolder>().pTwoCharacterName;
-		pTwoCharacterPortrait.sprite = playerDataHolder.GetComponent<PlayerDataHolder> ().pTwoPortrait;
-		pTwoStockImageOne.sprite = playerDataHolder.GetComponent<PlayerDataHolder> ().pTwoStock;
-		pTwoStockImageTwo.sprite = playerDataHolder.GetComponent<PlayerDataHolder> ().pTwoStock;
+		pTwoName.text = playerDataHolder.GetComponent<DataHolder>().pTwoCharacterName;
+		pTwoCharacterPortrait.sprite = playerDataHolder.GetComponent<DataHolder> ().pTwoPortrait;
+		pTwoStockImageOne.sprite = playerDataHolder.GetComponent<DataHolder> ().pTwoStock;
+		pTwoStockImageTwo.sprite = playerDataHolder.GetComponent<DataHolder> ().pTwoStock;
 		pTwoPercentText.text = "" + (int)pOneCurrentPercent + "%";
 
 		//Stock Images
@@ -176,10 +176,10 @@ public class CombatGUIController : MonoBehaviour
 		{	
 			playerThree = gameManager.GetComponent<GameManager> ().playerThree;
 			pThreeCurrentPercent = playerThree.GetComponent<TempPlayerController> ().health;
-			pThreeName.text = playerDataHolder.GetComponent<PlayerDataHolder>().pThreeCharacterName;
-			pThreeCharacterPortrait.sprite = playerDataHolder.GetComponent<PlayerDataHolder> ().pThreePortrait;
-			pThreeStockImageOne.sprite = playerDataHolder.GetComponent<PlayerDataHolder> ().pThreeStock;
-			pThreeStockImageTwo.sprite = playerDataHolder.GetComponent<PlayerDataHolder> ().pThreeStock;
+			pThreeName.text = playerDataHolder.GetComponent<DataHolder>().pThreeCharacterName;
+			pThreeCharacterPortrait.sprite = playerDataHolder.GetComponent<DataHolder> ().pThreePortrait;
+			pThreeStockImageOne.sprite = playerDataHolder.GetComponent<DataHolder> ().pThreeStock;
+			pThreeStockImageTwo.sprite = playerDataHolder.GetComponent<DataHolder> ().pThreeStock;
 			pThreePercentText.text = "" + (int)pThreeCurrentPercent + "%";
 
 			//Stock Images
@@ -225,10 +225,10 @@ public class CombatGUIController : MonoBehaviour
 		{
 			playerFour = gameManager.GetComponent<GameManager> ().playerFour;
 			pFourCurrentPercent = playerFour.GetComponent<TempPlayerController> ().health;
-			pFourName.text = playerDataHolder.GetComponent<PlayerDataHolder>().pFourCharacterName;
-			pFourCharacterPortrait.sprite = playerDataHolder.GetComponent<PlayerDataHolder> ().pFourPortrait;
-			pFourStockImageOne.sprite = playerDataHolder.GetComponent<PlayerDataHolder> ().pFourStock;
-			pFourStockImageTwo.sprite = playerDataHolder.GetComponent<PlayerDataHolder> ().pFourStock;
+			pFourName.text = playerDataHolder.GetComponent<DataHolder>().pFourCharacterName;
+			pFourCharacterPortrait.sprite = playerDataHolder.GetComponent<DataHolder> ().pFourPortrait;
+			pFourStockImageOne.sprite = playerDataHolder.GetComponent<DataHolder> ().pFourStock;
+			pFourStockImageTwo.sprite = playerDataHolder.GetComponent<DataHolder> ().pFourStock;
 			pFourPercentText.text = "" + (int)pFourCurrentPercent + "%";
 
 			//Stock Images

@@ -1,9 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
-public class PlayerDataHolder : MonoBehaviour 
+public class DataHolder : MonoBehaviour 
 {
 	public int playerCount;
+
+	public float itemSpawnDelay;
+
+	public bool characterMenuLoad = false;
+
+	public string winnerName;
 
 	public string pOneCharacterName;
 	public string pTwoCharacterName;
@@ -20,6 +27,8 @@ public class PlayerDataHolder : MonoBehaviour
 	public Sprite pTwoStock;
 	public Sprite pThreeStock;
 	public Sprite pFourStock;
+
+	public List <GameObject> possibleWinnersList;
 
 	public enum CharacterSelection {mario,donkeyKong,samus,kirby,
 									luigi,zelda,yoshi,bowser}
@@ -43,7 +52,44 @@ public class PlayerDataHolder : MonoBehaviour
 	void Update () 
 	{
 		PlayerInfo ();
+//		ItemSpawner ();
 	}
+
+	void ItemSpawner ()
+	{
+		if (Application.loadedLevel == 5)
+		{
+			GameObject itemSpawn;
+			itemSpawn = GameObject.Find ("ItemSpawn");
+			//Very Rare Items
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.SMASHBALL);
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.HAMMER);
+			//Rare Items
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.HOMERUNBAT);
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.MUSHROOM);
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.FAN);
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.LASERGUN);
+			//Uncommon Items
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.BEAMSWORD);
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.POKEBALL);
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.BO_OMB);
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.ICE);
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.METAL);
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.STAR);
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.BUNNYEARS);
+			//Common Items
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.PILL);
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.SHELL);
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.TOMATO);
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.FIREFLOWER);
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.TRIPMINE);
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.BANANAPEEL);
+			itemSpawn.GetComponent<ItemSelector>().veryRare.Add (ItemSelector.itemName.BUMPER);
+			//Change spawn rate
+			itemSpawn.GetComponent<ItemSpawner>().spawnRate = itemSpawnDelay;
+		}
+	}
+
 
 	void PlayerInfo ()
 	{

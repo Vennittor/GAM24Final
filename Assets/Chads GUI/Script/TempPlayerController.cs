@@ -8,6 +8,8 @@ public class TempPlayerController : MonoBehaviour
 
 	public float health;
 
+	public string characterName;
+
 	// Use this for initialization
 	void Start () 
 	{
